@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Gestión de Géneros</h1>
+    <a href="{{ url_for('main.add_genre') }}">Añadir Nuevo Género</a>
+    
+    <h2>Listado de Géneros</h2>
+    <ul class="genres-list">
+        {% for main_genre in main_genres %}
+            <li>
+                <span class="main-genre">{{ main_genre.nombre }}</span>
+                <form action="{{ url_for('main.delete_main_genre', id=main_genre.id_main_genero) }}" method="post" style="display:inline;">
+                    <button type="submit">Eliminar</button>
+                </form>
+                <ul>
+                    {% for sub_genre in main_genre.sub_generos %}
+                        <li class="sub-genre">
+                            {{ sub_genre.nombre }}
+                            <form action="{{ url_for('main.delete_sub_genre', id=sub_genre.id_sub_genero) }}" method="post" style="display:inline;">
+                                <button type="submit">Eliminar</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            <li>No hay géneros en la base de datos.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

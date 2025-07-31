@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Añadir Nuevo Género</h1>
+    <form method="post">
+        <div>
+            <label for="nombre">Nombre del Género:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        
+        <div>
+            <label>Tipo:</label>
+            <input type="radio" id="main" name="tipo" value="main" checked onchange="toggleSubGenre(this)">
+            <label for="main">Género Principal</label>
+            <input type="radio" id="sub" name="tipo" value="sub" onchange="toggleSubGenre(this)">
+            <label for="sub">Subgénero</label>
+        </div>
+        
+        <div id="sub-genre-select" style="display:none;">
+            <label for="main_genero_id">Género Principal al que pertenece:</label>
+            <select name="main_genero_id" id="main_genero_id">
+                {% for main_genre in main_genres %}
+                    <option value="{{ main_genre.id_main_genero }}">{{ main_genre.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Guardar Género</button>
+    </form>
+
+    <script>
+        function toggleSubGenre(radio) {
+            const subGenreSelect = document.getElementById('sub-genre-select');
+            if (radio.value === 'sub') {
+                subGenreSelect.style.display = 'block';
+            } else {
+                subGenreSelect.style.display = 'none';
+            }
+        }
+    </script>
+{% endblock %}
