@@ -2,6 +2,8 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .models import db, MainGenero, SubGenero, Mood, Artista, Cancion
+from sqlalchemy.orm import joinedload
+
 
 # Creamos un Blueprint para organizar nuestras rutas
 main = Blueprint('main', __name__)
@@ -117,8 +119,15 @@ def delete_artist(id):
 @main.route('/song')
 def list_songs():
     """Página principal que listará todas las canciones. (La implementaremos después)"""
-    # Por ahora, solo es un marcador de posición.
-    return "<h1>Listado de Canciones (Próximamente)</h1>"
+     # Usamos joinedload para cargar eficientemente los datos relacionados y evitar múltiples consultas
+    songs = Cancion.query.options(
+        joinedload(Cancion.artista_principal),
+        joinedload(Cancion.sub_genero).joinedload(SubGenero.main_genero),
+        joinedload(Cancion.mood),
+        joinedload(Cancion.artistas_featuring)
+    ).order_by(Cancion.nombre).all()
+    return render_template('list_songs.html', songs=songs)
+
 
 @main.route('/song/add', methods=['GET', 'POST'])
 def add_song():
