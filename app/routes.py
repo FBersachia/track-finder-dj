@@ -136,10 +136,13 @@ def list_songs():
     return render_template('list_songs.html', songs=songs, artistas=artistas, sub_generos=sub_generos, moods=moods)
 
 
+# app/routes.py
+
 @main.route('/song/add', methods=['GET', 'POST'])
 def add_song():
     """Maneja la creación de nuevas canciones."""
     if request.method == 'POST':
+        # ... (la lógica del POST no cambia) ...
         # 1. Obtener todos los datos del formulario
         nombre = request.form.get('nombre')
         año = request.form.get('año')
@@ -150,16 +153,13 @@ def add_song():
         mood_id = request.form.get('mood_id')
         featuring_ids = request.form.getlist('featuring_ids')
 
-        # --- ### CORRECCIÓN ### ---
         # Convertimos las cadenas vacías de los campos opcionales a None
-        # para que la base de datos las acepte como valores NULL.
         if not año:
             año = None
         if not sub_genero_id:
             sub_genero_id = None
         if not mood_id:
             mood_id = None
-        # -------------------------
 
         # 2. Crear la nueva instancia de Cancion
         nueva_cancion = Cancion(
@@ -183,13 +183,13 @@ def add_song():
         
         return redirect(url_for('main.list_songs'))
 
-    # Para el método GET, necesitamos pasar todos los datos para los dropdowns
+    # --- ### CORRECCIÓN ### ---
+    # Para el método GET, pasamos song=None para que el formulario reutilizable funcione.
     artistas = Artista.query.order_by(Artista.nombre).all()
     sub_generos = SubGenero.query.join(MainGenero).order_by(MainGenero.nombre, SubGenero.nombre).all()
     moods = Mood.query.order_by(Mood.nombre).all()
     
-    return render_template('song_form.html', artistas=artistas, sub_generos=sub_generos, moods=moods)
-
+    return render_template('song_form.html', song=None, artistas=artistas, sub_generos=sub_generos, moods=moods)
 @main.route('/song/search')
 def search_songs():
     """Esta ruta es llamada por HTMX para filtrar las canciones."""
