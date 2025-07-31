@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Añadir Nueva Canción</h1>
+    <form method="post">
+        <div>
+            <label for="nombre">Nombre de la Canción (requerido):</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <br>
+        <div>
+            <label for="artista_principal_id">Artista Principal (requerido):</label>
+            <select name="artista_principal_id" id="artista_principal_id" required>
+                <option value="">Selecciona un artista</option>
+                {% for artista in artistas %}
+                    <option value="{{ artista.id_artista }}">{{ artista.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="ubicacion">Ubicación del Archivo (requerido):</label>
+            <input type="text" id="ubicacion" name="ubicacion" required style="width: 400px;">
+        </div>
+        <br>
+        <hr>
+        <h3>Datos Opcionales</h3>
+        <div>
+            <label for="año">Año:</label>
+            <input type="number" id="año" name="año">
+        </div>
+        <br>
+        <div>
+            <label for="sub_genero_id">Subgénero:</label>
+            <select name="sub_genero_id" id="sub_genero_id">
+                <option value="">Selecciona un subgénero</option>
+                {% for sub_genero in sub_generos %}
+                    <option value="{{ sub_genero.id_sub_genero }}">{{ sub_genero.main_genero.nombre }} - {{ sub_genero.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="mood_id">Mood:</label>
+            <select name="mood_id" id="mood_id">
+                <option value="">Selecciona un mood</option>
+                {% for mood in moods %}
+                    <option value="{{ mood.id_mood }}">{{ mood.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="featuring_ids">Artistas en Colaboración (Ctrl+Click para varios):</label>
+            <select name="featuring_ids" id="featuring_ids" multiple style="height: 150px;">
+                {% for artista in artistas %}
+                    <option value="{{ artista.id_artista }}">{{ artista.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <label for="keywords">Palabras Clave (separadas por coma):</label>
+            <input type="text" id="keywords" name="keywords" style="width: 400px;">
+        </div>
+        <br>
+        <button type="submit">Guardar Canción</button>
+    </form>
+{% endblock %}

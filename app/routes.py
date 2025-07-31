@@ -1,7 +1,7 @@
 # app/routes.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from .models import db, MainGenero, SubGenero, Mood, Artista
+from .models import db, MainGenero, SubGenero, Mood, Artista, Cancion
 
 # Creamos un Blueprint para organizar nuestras rutas
 main = Blueprint('main', __name__)
@@ -111,3 +111,65 @@ def delete_artist(id):
     db.session.delete(artista)
     db.session.commit()
     return redirect(url_for('main.list_artist')) # <--- Redirección corregida
+
+# --- RUTAS PARA CANCIONES ---
+
+@main.route('/song')
+def list_songs():
+    """Página principal que listará todas las canciones. (La implementaremos después)"""
+    # Por ahora, solo es un marcador de posición.
+    return "<h1>Listado de Canciones (Próximamente)</h1>"
+
+@main.route('/song/add', methods=['GET', 'POST'])
+def add_song():
+    """Maneja la creación de nuevas canciones."""
+    if request.method == 'POST':
+        # 1. Obtener todos los datos del formulario
+        nombre = request.form.get('nombre')
+        año = request.form.get('año')
+        keywords = request.form.get('keywords')
+        ubicacion = request.form.get('ubicacion')
+        artista_principal_id = request.form.get('artista_principal_id')
+        sub_genero_id = request.form.get('sub_genero_id')
+        mood_id = request.form.get('mood_id')
+        featuring_ids = request.form.getlist('featuring_ids')
+
+        # --- ### CORRECCIÓN ### ---
+        # Convertimos las cadenas vacías de los campos opcionales a None
+        # para que la base de datos las acepte como valores NULL.
+        if not año:
+            año = None
+        if not sub_genero_id:
+            sub_genero_id = None
+        if not mood_id:
+            mood_id = None
+        # -------------------------
+
+        # 2. Crear la nueva instancia de Cancion
+        nueva_cancion = Cancion(
+            nombre=nombre,
+            año=año,
+            keywords=keywords,
+            ubicacion=ubicacion,
+            artista_principal_id=artista_principal_id,
+            sub_genero_id=sub_genero_id,
+            mood_id=mood_id
+        )
+
+        # 3. Manejar la relación muchos-a-muchos (featuring)
+        if featuring_ids:
+            artistas_ft = Artista.query.filter(Artista.id_artista.in_(featuring_ids)).all()
+            nueva_cancion.artistas_featuring = artistas_ft
+        
+        # 4. Guardar en la base de datos
+        db.session.add(nueva_cancion)
+        db.session.commit()
+        
+        return redirect(url_for('main.list_songs'))
+
+    # Para el método GET, necesitamos pasar todos los datos para los dropdowns
+    artistas = Artista.query.order_by(Artista.nombre).all()
+    sub_generos = SubGenero.query.join(MainGenero).order_by(MainGenero.nombre, SubGenero.nombre).all()
+    moods = Mood.query.order_by(Mood.nombre).all()
+    
+    return render_template('song_form.html', artistas=artistas, sub_generos=sub_generos, moods=moods)
