@@ -1,0 +1,22 @@
+{% for song in songs %}
+<tr>
+    <td>{{ song.nombre }}</td>
+    <td>{{ song.artista_principal.nombre if song.artista_principal else 'N/A' }}</td>
+    <td>{{ song.año if song.año else 'N/A' }}</td>
+    <td>
+        {% if song.sub_genero %}
+            {{ song.sub_genero.main_genero.nombre }} - {{ song.sub_genero.nombre }}
+        {% else %}
+            N/A
+        {% endif %}
+    </td>
+    <td>{{ song.mood.nombre if song.mood else 'N/A' }}</td>
+    <td>
+        {{ song.artistas_featuring | map(attribute='nombre') | join(', ') }}
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="6" style="text-align: center;">No se encontraron canciones con esos filtros.</td>
+</tr>
+{% endfor %}

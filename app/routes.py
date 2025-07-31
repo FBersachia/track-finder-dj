@@ -3,6 +3,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .models import db, MainGenero, SubGenero, Mood, Artista, Cancion
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_ # Añade 'or_' a las importaciones de sqlalchemy
+
 
 
 # Creamos un Blueprint para organizar nuestras rutas
@@ -118,15 +120,20 @@ def delete_artist(id):
 
 @main.route('/song')
 def list_songs():
-    """Página principal que listará todas las canciones. (La implementaremos después)"""
-     # Usamos joinedload para cargar eficientemente los datos relacionados y evitar múltiples consultas
+    """Página principal que lista todas las canciones y prepara los filtros."""
     songs = Cancion.query.options(
         joinedload(Cancion.artista_principal),
         joinedload(Cancion.sub_genero).joinedload(SubGenero.main_genero),
         joinedload(Cancion.mood),
         joinedload(Cancion.artistas_featuring)
     ).order_by(Cancion.nombre).all()
-    return render_template('list_songs.html', songs=songs)
+
+    # También cargamos los datos para los dropdowns de los filtros
+    artistas = Artista.query.order_by(Artista.nombre).all()
+    sub_generos = SubGenero.query.join(MainGenero).order_by(MainGenero.nombre, SubGenero.nombre).all()
+    moods = Mood.query.order_by(Mood.nombre).all()
+    
+    return render_template('list_songs.html', songs=songs, artistas=artistas, sub_generos=sub_generos, moods=moods)
 
 
 @main.route('/song/add', methods=['GET', 'POST'])
@@ -182,3 +189,34 @@ def add_song():
     moods = Mood.query.order_by(Mood.nombre).all()
     
     return render_template('song_form.html', artistas=artistas, sub_generos=sub_generos, moods=moods)
+
+@main.route('/song/search')
+def search_songs():
+    """Esta ruta es llamada por HTMX para filtrar las canciones."""
+    q = request.args.get('q')
+    artist_id = request.args.get('artist_id')
+    sub_genero_id = request.args.get('sub_genero_id')
+    mood_id = request.args.get('mood_id')
+
+    # Empezamos con una consulta base
+    query = Cancion.query.options(
+        joinedload(Cancion.artista_principal),
+        joinedload(Cancion.sub_genero).joinedload(SubGenero.main_genero),
+        joinedload(Cancion.mood),
+        joinedload(Cancion.artistas_featuring)
+    )
+
+    # Aplicamos filtros dinámicamente
+    if q:
+        query = query.filter(or_(Cancion.nombre.ilike(f'%{q}%'), Cancion.keywords.ilike(f'%{q}%')))
+    if artist_id:
+        query = query.filter(Cancion.artista_principal_id == artist_id)
+    if sub_genero_id:
+        query = query.filter(Cancion.sub_genero_id == sub_genero_id)
+    if mood_id:
+        query = query.filter(Cancion.mood_id == mood_id)
+    
+    songs = query.order_by(Cancion.nombre).all()
+
+    # Devolvemos SÓLO el parcial, no la página completa
+    return render_template('_song_rows.html', songs=songs)

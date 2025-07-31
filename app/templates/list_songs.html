@@ -2,14 +2,44 @@
 
 {% block content %}
     <style>
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em;}
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
+        .filters { display: flex; gap: 1em; align-items: center; flex-wrap: wrap; }
     </style>
 
     <h1>Listado de Canciones</h1>
     <a href="{{ url_for('main.add_song') }}">Añadir Nueva Canción</a>
     <br><br>
+
+    <form class="filters" 
+          hx-get="{{ url_for('main.search_songs') }}" 
+          hx-trigger="change, keyup delay:500ms" 
+          hx-target="#song-table-body">
+
+        <input type="text" name="q" placeholder="Buscar por nombre o keyword...">
+        
+        <select name="artist_id">
+            <option value="">-- Artista --</option>
+            {% for artista in artistas %}
+                <option value="{{ artista.id_artista }}">{{ artista.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="sub_genero_id">
+            <option value="">-- Subgénero --</option>
+            {% for sub_genero in sub_generos %}
+                <option value="{{ sub_genero.id_sub_genero }}">{{ sub_genero.main_genero.nombre }} - {{ sub_genero.nombre }}</option>
+            {% endfor %}
+        </select>
+        
+        <select name="mood_id">
+            <option value="">-- Mood --</option>
+            {% for mood in moods %}
+                <option value="{{ mood.id_mood }}">{{ mood.nombre }}</option>
+            {% endfor %}
+        </select>
+    </form>
 
     <table>
         <thead>
@@ -22,30 +52,8 @@
                 <th>Colaboradores</th>
             </tr>
         </thead>
-        <tbody>
-            {% for song in songs %}
-            <tr>
-                <td>{{ song.nombre }}</td>
-                <td>{{ song.artista_principal.nombre if song.artista_principal else 'N/A' }}</td>
-                <td>{{ song.año if song.año else 'N/A' }}</td>
-                <td>
-                    {% if song.sub_genero %}
-                        {{ song.sub_genero.main_genero.nombre }} - {{ song.sub_genero.nombre }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
-                <td>{{ song.mood.nombre if song.mood else 'N/A' }}</td>
-                <td>
-                    {# Usamos un 'join' para mostrar los nombres separados por coma #}
-                    {{ song.artistas_featuring | map(attribute='nombre') | join(', ') }}
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" style="text-align: center;">No hay canciones en la base de datos.</td>
-            </tr>
-            {% endfor %}
+        <tbody id="song-table-body">
+            {% include '_song_rows.html' %}
         </tbody>
     </table>
 
