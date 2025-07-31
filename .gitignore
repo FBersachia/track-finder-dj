@@ -1,0 +1,29 @@
+# Entorno Virtual
+venv/
+*/venv/
+.venv
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de configuración de IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de entorno (para claves secretas, etc.)
+.env
+*.env
+
+# Bases de datos locales
+*.sqlite3
+*.db
