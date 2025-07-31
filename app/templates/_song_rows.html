@@ -14,9 +14,12 @@
     <td>
         {{ song.artistas_featuring | map(attribute='nombre') | join(', ') }}
     </td>
+    <td>
+        <a href="{{ url_for('main.edit_song', id=song.id_cancion) }}">Editar</a>
+    </td>
 </tr>
 {% else %}
 <tr>
-    <td colspan="6" style="text-align: center;">No se encontraron canciones con esos filtros.</td>
+    <td colspan="7" style="text-align: center;">No se encontraron canciones con esos filtros.</td>
 </tr>
 {% endfor %}

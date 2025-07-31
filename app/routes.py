@@ -220,3 +220,36 @@ def search_songs():
 
     # Devolvemos SÓLO el parcial, no la página completa
     return render_template('_song_rows.html', songs=songs)
+
+@main.route('/song/edit/<int:id>', methods=['GET', 'POST'])
+def edit_song(id):
+    """Maneja la edición de una canción existente."""
+    song = Cancion.query.get_or_404(id)
+
+    if request.method == 'POST':
+        # Actualizar los datos del objeto 'song' con los datos del formulario
+        song.nombre = request.form.get('nombre')
+        song.año = request.form.get('año') or None
+        song.keywords = request.form.get('keywords')
+        song.ubicacion = request.form.get('ubicacion')
+        song.artista_principal_id = request.form.get('artista_principal_id')
+        song.sub_genero_id = request.form.get('sub_genero_id') or None
+        song.mood_id = request.form.get('mood_id') or None
+        
+        # Actualizar la relación muchos-a-muchos
+        featuring_ids = request.form.getlist('featuring_ids')
+        song.artistas_featuring.clear() # Limpiamos la lista actual
+        if featuring_ids:
+            artistas_ft = Artista.query.filter(Artista.id_artista.in_(featuring_ids)).all()
+            song.artistas_featuring = artistas_ft
+
+        db.session.commit() # Guardamos los cambios en la BD
+        return redirect(url_for('main.list_songs'))
+
+    # Para el método GET, preparamos los datos para los dropdowns
+    artistas = Artista.query.order_by(Artista.nombre).all()
+    sub_generos = SubGenero.query.join(MainGenero).order_by(MainGenero.nombre, SubGenero.nombre).all()
+    moods = Mood.query.order_by(Mood.nombre).all()
+
+    # Renderizamos el mismo formulario, pero pasándole el objeto 'song'
+    return render_template('song_form.html', song=song, artistas=artistas, sub_generos=sub_generos, moods=moods)
