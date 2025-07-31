@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Gestión de Artistas</h1>
+    <a href="{{ url_for('main.add_artist') }}">Añadir Nuevo Artista</a>
+    
+    <h2>Listado de Artistas</h2>
+    <ul>
+        {% for artist in artists %}
+            <li>
+                {{ artist.nombre }}
+                <form action="{{ url_for('main.delete_artist', id=artist.id_artista) }}" method="post" style="display:inline;">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </li>
+        {% else %}
+            <li>No hay artistas en la base de datos.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

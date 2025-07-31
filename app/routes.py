@@ -1,7 +1,7 @@
 # app/routes.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from .models import db, MainGenero, SubGenero, Mood
+from .models import db, MainGenero, SubGenero, Mood, Artista
 
 # Creamos un Blueprint para organizar nuestras rutas
 main = Blueprint('main', __name__)
@@ -80,3 +80,34 @@ def delete_mood(id):
     db.session.delete(mood)
     db.session.commit()
     return redirect(url_for('main.list_moods'))
+
+# --- RUTAS PARA ARTISTAS (VERSIÓN CORREGIDA EN SINGULAR) ---
+
+@main.route('/artist')
+def list_artist(): # <--- Nombre de función en singular
+    """Muestra una lista de todos los artistas."""
+    artists = Artista.query.order_by(Artista.nombre).all()
+    return render_template('artists.html', artists=artists)
+
+@main.route('/artist/add', methods=['GET', 'POST'])
+def add_artist():
+    """Maneja la creación de nuevos artistas."""
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        
+        if not Artista.query.filter_by(nombre=nombre).first():
+            nuevo_artista = Artista(nombre=nombre)
+            db.session.add(nuevo_artista)
+            db.session.commit()
+            
+        return redirect(url_for('main.list_artist')) # <--- Redirección corregida
+
+    return render_template('artist_form.html')
+
+@main.route('/artist/delete/<int:id>', methods=['POST'])
+def delete_artist(id):
+    """Elimina un artista."""
+    artista = Artista.query.get_or_404(id)
+    db.session.delete(artista)
+    db.session.commit()
+    return redirect(url_for('main.list_artist')) # <--- Redirección corregida
