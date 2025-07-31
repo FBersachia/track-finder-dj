@@ -280,3 +280,11 @@ def open_song_location(id):
 
     # Redirigimos de vuelta a la lista de canciones
     return redirect(url_for('main.list_songs'))
+
+@main.route('/song/delete/<int:id>', methods=['POST'])
+def delete_song(id):
+    """Elimina una canción de la base de datos."""
+    song = Cancion.query.get_or_404(id)
+    db.session.delete(song)
+    db.session.commit()
+    return redirect(url_for('main.list_songs'))
