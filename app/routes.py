@@ -1,7 +1,7 @@
 # app/routes.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from .models import db, MainGenero, SubGenero
+from .models import db, MainGenero, SubGenero, Mood
 
 # Creamos un Blueprint para organizar nuestras rutas
 main = Blueprint('main', __name__)
@@ -48,3 +48,35 @@ def delete_sub_genre(id):
     db.session.delete(genero)
     db.session.commit()
     return redirect(url_for('main.list_genres'))
+
+# --- RUTAS PARA MOODS ---
+
+@main.route('/moods')
+def list_moods():
+    """Muestra una lista de todos los moods."""
+    moods = Mood.query.order_by(Mood.nombre).all()
+    return render_template('moods.html', moods=moods)
+
+@main.route('/moods/add', methods=['GET', 'POST'])
+def add_mood():
+    """Maneja la creación de nuevos moods."""
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        
+        # Evita crear moods duplicados
+        if not Mood.query.filter_by(nombre=nombre).first():
+            nuevo_mood = Mood(nombre=nombre)
+            db.session.add(nuevo_mood)
+            db.session.commit()
+            
+        return redirect(url_for('main.list_moods'))
+
+    return render_template('mood_form.html')
+
+@main.route('/moods/delete/<int:id>', methods=['POST'])
+def delete_mood(id):
+    """Elimina un mood."""
+    mood = Mood.query.get_or_404(id)
+    db.session.delete(mood)
+    db.session.commit()
+    return redirect(url_for('main.list_moods'))

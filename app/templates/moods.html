@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Gestión de Moods</h1>
+    <a href="{{ url_for('main.add_mood') }}">Añadir Nuevo Mood</a>
+    
+    <h2>Listado de Moods</h2>
+    <ul>
+        {% for mood in moods %}
+            <li>
+                {{ mood.nombre }}
+                <form action="{{ url_for('main.delete_mood', id=mood.id_mood) }}" method="post" style="display:inline;">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </li>
+        {% else %}
+            <li>No hay moods en la base de datos.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
