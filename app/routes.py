@@ -1,5 +1,8 @@
 # app/routes.py
-
+import os
+import subprocess
+import platform
+# ... (otras importaciones)
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .models import db, MainGenero, SubGenero, Mood, Artista, Cancion
 from sqlalchemy.orm import joinedload
@@ -253,3 +256,27 @@ def edit_song(id):
 
     # Renderizamos el mismo formulario, pero pasándole el objeto 'song'
     return render_template('song_form.html', song=song, artistas=artistas, sub_generos=sub_generos, moods=moods)
+
+@main.route('/song/open/<int:id>', methods=['POST'])
+def open_song_location(id):
+    """Abre la carpeta que contiene el archivo de la canción en el explorador de archivos del sistema."""
+    song = Cancion.query.get_or_404(id)
+    
+    # Nos aseguramos de que la ruta exista para evitar errores
+    if song.ubicacion and os.path.exists(song.ubicacion):
+        # Obtenemos solo el directorio, no el archivo completo
+        directory = os.path.dirname(song.ubicacion)
+        
+        system = platform.system()
+        if system == "Windows":
+            # En Windows, 'explorer' abre el explorador de archivos
+            subprocess.run(['explorer', directory])
+        elif system == "Darwin": # macOS
+            # En macOS, 'open' es el comando equivalente
+            subprocess.run(['open', directory])
+        else: # Linux
+            # En Linux, 'xdg-open' es el estándar más común
+            subprocess.run(['xdg-open', directory])
+
+    # Redirigimos de vuelta a la lista de canciones
+    return redirect(url_for('main.list_songs'))
